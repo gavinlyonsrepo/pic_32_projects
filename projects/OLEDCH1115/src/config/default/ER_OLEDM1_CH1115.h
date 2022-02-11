@@ -9,11 +9,12 @@
 #ifndef _ER_OLEDM1_CH1115_H_
 #define _ER_OLEDM1_CH1115_H_
 
+// Section: Includes
 #include <string.h> 
 #include "ER_OLEDM1_CH1115_graphics.h"
 #include "definitions.h"
 
-// ** DEFINES **
+// Section: Defines
 
 // Fonts setup no buffer default font
 #define NO_BUFFER_FONTPADDING  send_data(0x00)
@@ -81,12 +82,12 @@
 #define ERMCH1115_ACTIVATE_SCROLL   0x2F
 
 // GPIO
-#define ERMCH1115_CS_SetHigh CS_PA04_Set()
-#define ERMCH1115_CS_SetLow CS_PA04_Clear()
-#define ERMCH1115_CD_SetHigh DC_PA03_Set()
-#define ERMCH1115_CD_SetLow DC_PA03_Clear()
-#define ERMCH1115_RST_SetHigh RESET_PA02_Set()
-#define ERMCH1115_RST_SetLow RESET_PA02_Clear() 
+#define ERMCH1115_CS_SetHigh CS_Set()
+#define ERMCH1115_CS_SetLow CS_Clear()
+#define ERMCH1115_CD_SetHigh DC_Set()
+#define ERMCH1115_CD_SetLow DC_Clear()
+#define ERMCH1115_RST_SetHigh RESET_Set()
+#define ERMCH1115_RST_SetLow RESET_Clear() 
 
 // Delays
 #define ERMCH1115_INITDELAY 100 // mS
@@ -98,7 +99,7 @@
 #define OLED_HEIGHT  64
 #define OLED_PAGE_NUM  (OLED_HEIGHT/8)
 
-// External user functios
+// External user functions
 void OLEDupdate(void);
 void OLEDclearBuffer(void);
 void OLEDBuffer(int16_t x, int16_t y, uint8_t w, uint8_t h, uint8_t* data);
@@ -121,7 +122,7 @@ void OLEDfadeEffect(uint8_t bits );
 bool OLEDIssleeping(void);
 void OLEDPowerDown(void);
 
-// Internal 
+// Internal not needed by user
 void drawPixel(int16_t x, int16_t y, uint8_t colour);
 void sendData(uint8_t data);
 void sendCommand(uint8_t command, uint8_t value);

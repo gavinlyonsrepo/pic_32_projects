@@ -18,12 +18,10 @@ uint8_t bufferWidth = OLED_WIDTH;
 uint8_t bufferHeight = OLED_HEIGHT;
 
 // Desc: begin Method initialise OLED 
-// Sets pinmodes and SPI setup
 // Param1: OLEDcontrast default = 0x80 , range 0x00 to 0xFE
 void OLEDbegin (uint8_t myOLEDcontrast) 
 {
   _OLEDcontrast  = myOLEDcontrast ;
-		//SPI.begin();
   OLEDinit();
 }
 
@@ -94,7 +92,7 @@ void sendCommand (uint8_t command,uint8_t value)
   ERMCH1115_CD_SetHigh;
 }
 
-// Desc: Resets OLED in a four wire setup called at start 
+// Desc: Resets OLED 
 void OLEDReset () 
 {
 	ERMCH1115_RST_SetHigh; 

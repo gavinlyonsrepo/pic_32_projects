@@ -12,9 +12,9 @@
 #include "ER_OLEDM1_CH1115.h"
 #include <stdlib.h> // for the abs function, Calculates the absolute value.
 
-/* Variables */ 
+// Section: Variables 
 
-// Screen
+// Screen related
 const int16_t WIDTH = OLED_WIDTH ;
 const int16_t HEIGHT = OLED_HEIGHT; 
 int16_t _width;
@@ -27,13 +27,17 @@ uint8_t textsize;
 uint8_t rotation;
 bool wrap; // If set, 'wrap' text at right edge of display
 
-// Fonts
+// Font   related 
 OLEDFONT_e FontNum;
 uint8_t _FontNumber = OLEDFont_Default;
 uint8_t _CurrentFontWidth = 5;
 uint8_t _CurrentFontoffset = 0;
 uint8_t _CurrentFontheight = 8;
 
+
+// Section:  Function Space
+
+// Init OLED graphics 
 void OGInit() {
     _width = WIDTH;
     _height = HEIGHT;
@@ -333,10 +337,9 @@ void OGfillTriangle(int16_t x0, int16_t y0,
     }
 }
 
-// Draw a 1-bit color bitmap at the specified x, y position from the
+// Desc:  Draw a 1-bit color bitmap at the specified x, y position from the
 // provided bitmap buffer using color as the
 // foreground color and bg as the background color.
-// Desc: Draws an bi-color bitmap to screen
 // Param 1,2  X,Y screen co-ord
 // Param 3,4 0-127 possible values width and height of bitmap in pixels 
 // Param 4,5 bitmap colors ,bitmap is bi-color
@@ -357,7 +360,7 @@ void OGdrawBitmapBuffer(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t colo
 }
 
 
-// Draw a character
+// Draw a character for Font 1-4,
 
 void OGdrawChar(int16_t x, int16_t y, unsigned char c,
         uint8_t color, uint8_t bg, uint8_t size) {
@@ -574,6 +577,7 @@ void OGdrawTextBigNum(uint8_t x, uint8_t y, char *pText, uint8_t color, uint8_t 
     }
 }
 
+// Draw a char array for Font 1-4,
 void OGdrawText(uint8_t x, uint8_t y, char *_text, uint16_t color, uint16_t bg, uint8_t size) {
     uint8_t cursor_x, cursor_y;
     uint16_t textsize, i;

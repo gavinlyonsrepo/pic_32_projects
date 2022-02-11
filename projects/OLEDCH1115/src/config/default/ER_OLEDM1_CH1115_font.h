@@ -2,6 +2,7 @@
 * Project Name: ER_OLEDM1_CH1115
 * File: ER_OLEDM1_CH1115_font.h
 * Description: ER_OLEDM1 OLED driven by CH1115 controller font file 
+* five fonts in file
 * Author: Gavin Lyons.
 * Project URL:  https://github.com/gavinlyonsrepo/pic_32_projects
 */
@@ -9,15 +10,8 @@
 #ifndef _ER_OLEDM1_CH1115_font_H
 #define _ER_OLEDM1_CH1115_font_H
 
-
-#define CH1115_Font_Two  // (2) thick (NO LOWERCASE)
-#define CH1115_Font_Three // (3) seven segment 
-#define CH1115_Font_Four // (4) wide (NO LOWERCASE)
-#define CH1115_Font_Five // (5) big numbers (NUMBERS ONLY )
-
-
 // *******USER FONT OPTION TWO *************
-// Comment these define in to decrease size of full ASCII font.
+// Comment this define  to decrease size of full ASCII font.
 // (decrease 640 bytes) removes extended ASCII 127-255
 #define UC_FONT_MOD_TWO 
 //***********************************************

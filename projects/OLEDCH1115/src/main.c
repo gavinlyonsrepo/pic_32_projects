@@ -3,16 +3,9 @@
 
   File Name:
     main.c
-
   Summary:
     This file contains the "main" function for a project.
-
-  Description:
-    This file contains the "main" function for a project.  The
-    "main" function calls the "SYS_Initialize" function to initialize the state
-    machines of all modules in the system. 
- 
- * URL : Project URL:  https://github.com/gavinlyonsrepo/pic_32_projects
+  URL : Project URL:  https://github.com/gavinlyonsrepo/pic_32_projects
  *******************************************************************************/
 
 
@@ -26,15 +19,12 @@
 #include "ER_OLEDM1_CH1115.h"
 #include "my_utils.h"
 
+// Section:  Defines 
 #define OLEDcontrast 0x80 //Contrast 00 to FF , 0x80 is default. user adjust
 #define DisplayDelay1 5000
 #define DisplayDelay2 0
 
-// *****************************************************************************
-// *****************************************************************************
-// Section: Main Entry Point
-// *****************************************************************************
-// *****************************************************************************
+// Section: Function prototypes 
 void mySetup(void);
 void UpdateDisplayDelay(void);
 void DisplayText(void);
@@ -42,6 +32,7 @@ void DisplayGraphics(void);
 void DisplayBitmap(void);
 void DisplayMiscTests(void);
 
+// Section: Main Entry Point
 int main(void) {
     /* Initialize all modules */
     SYS_Initialize(NULL);
@@ -59,7 +50,9 @@ int main(void) {
     /* Execution should not come here during normal operation */
 
     return ( EXIT_FAILURE);
-}
+} // End of Main
+
+// Section: Function Space
 
 // Display Bitmap , A series of tests to display the bitmap mode
 void DisplayBitmap(void) {
@@ -232,7 +225,7 @@ void DisplayText(void) {
     OGdrawCharBigNum(40, 32, '4', BACKGROUND, FOREGROUND);
     UpdateDisplayDelay();
 
-} // end
+} // end DisplayText
 
 // initialize the OLED
 void mySetup(void) {
@@ -244,6 +237,7 @@ void mySetup(void) {
     OLEDclearBuffer(); 
 }
 
+// Update buffer, hold and clear
 void UpdateDisplayDelay(void) {
     OLEDupdate(); // Write to the buffer
     delay_ms(DisplayDelay1);
