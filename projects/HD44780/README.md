@@ -1,7 +1,7 @@
 Overview
 --------------------------------------------
 * Description:
-Library to drive a LCD 16X02 character display driven by HD44780 via the I2C bus and a PCF8574 Interface "backpack" board for a PIC32CM
+Library to drive a LCD 16X02 character display driven by HD44780 via the I2C bus with a PCF8574 Interface "backpack" board for a PIC32CM microcontroller
 * Author: Gavin Lyons.
 * Complier: xc32 v4.00 compiler
 * IDE:  MPLAB X v6.00 , harmony v3
