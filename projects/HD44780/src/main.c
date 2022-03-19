@@ -17,16 +17,19 @@
 #include <stdbool.h>                    // Defines true
 #include <stdlib.h>                     // Defines EXIT_FAILURE
 #include "definitions.h"                 // SYS function prototypes
-#include "my_utils.h"                   // my delay
-#include "HD44780_I2C_lcd.h"
+
+#include "my_utils.h"                   // my delay user custom
+#include "HD44780_I2C_lcd.h"            // user custom
 
 // Section: Defines
 #define INIT_DELAY 1000
 #define DISPLAY_DELAY_2 2000
 #define DISPLAY_DELAY 5000
 
+
 // Section: Function Prototypes
 void Setup(void);
+void testPrintf(void);
 void HelloWorld(void);
 void CursorMoveTest(void);
 void ScrollTest(void);
@@ -35,6 +38,7 @@ void resetTest(void);
 void customChar(void);
 void backLightTest(void);
 
+ 
 // Section: Main Loop
 
 int main(void) {
@@ -46,13 +50,15 @@ int main(void) {
         /* Maintain state machines of all polled MPLAB Harmony modules. */
         SYS_Tasks();
        
-        HelloWorld();
-        CursorMoveTest();
+        testPrintf(); // test numerical data
+        HelloWorld(); // test string + character data
+        CursorMoveTest(); 
         ScrollTest();
         gotoTest();
-        resetTest();
+        resetTest(); // reset + cursor types test
         customChar();
         backLightTest();
+        
         LED_Toggle();
     }
 
@@ -66,13 +72,34 @@ int main(void) {
 void Setup(void) {
     LED_Clear();
     delay_ms(INIT_DELAY);
-    PCF8574_LCDInit(CURSOR_ON);
+    // Cursor type , rows number , col number , I2C address) 
+    PCF8574_LCDInit(LCDCursorTypeOn, 2, 16, 0x27);
     PCF8574_LCDClearScreen();
     PCF8574_LCDBackLightSet(true);
     LED_Set();
 }
 
+void testPrintf(void)
+{
+    uint16_t testOne = 62005;
+    int16_t testTwo = -4501;
+    double testThree = 3.143567;
+    double testFour = -14.561;
+    
+    PCF8574_LCDGOTO(1, 0);
+    PCF8574_LCDPrintf("%u ", testOne );
+    PCF8574_LCDPrintf("%d", testTwo);
+    PCF8574_LCDGOTO(2, 0);
+    PCF8574_LCDPrintf("%.4f ", testThree);
+    PCF8574_LCDPrintf("%.2f", testFour);
+    
+    delay_ms(DISPLAY_DELAY);
+
+}
+
+
 void HelloWorld(void) {
+    PCF8574_LCDClearScreen();
     PCF8574_LCDGOTO(1, 0);
     PCF8574_LCDSendString("Hello");
     PCF8574_LCDGOTO(2, 0);
@@ -82,17 +109,18 @@ void HelloWorld(void) {
 }
 
 void CursorMoveTest(void) {
-    PCF8574_LCDMoveCursor(MOVE_RIGHT, 2);
-    delay_ms(DISPLAY_DELAY);
-    PCF8574_LCDMoveCursor(MOVE_LEFT, 2);
+    PCF8574_LCDMoveCursor(LCDMoveRight, 2);
+    delay_ms(DISPLAY_DELAY_2);
+    PCF8574_LCDMoveCursor(LCDMoveLeft, 2);
+    delay_ms(DISPLAY_DELAY_2);
 }
 
 void ScrollTest(void) {
     for (uint8_t i = 0; i < 5; i++) {
-        PCF8574_LCDScroll(MOVE_RIGHT, 1);
+        PCF8574_LCDScroll(LCDMoveRight, 1);
         delay_ms(DISPLAY_DELAY_2);
     }
-    PCF8574_LCDScroll(MOVE_LEFT, 5);
+    PCF8574_LCDScroll(LCDMoveLeft, 5);
     delay_ms(DISPLAY_DELAY_2);
 }
 
@@ -101,12 +129,16 @@ void gotoTest(void) {
     PCF8574_LCDGOTO(1, 10);
     PCF8574_LCDSendChar('A');
     PCF8574_LCDGOTO(2, 2);
-    PCF8574_LCDSendString("Line");
+    PCF8574_LCDSendString("Line2");
     delay_ms(DISPLAY_DELAY);
 }
 
 void resetTest(void) {
-    PCF8574_LCDResetScreen(CURSOR_BLINK);
+    PCF8574_LCDResetScreen(LCDCursorTypeOnBlink);
+    delay_ms(DISPLAY_DELAY);
+    PCF8574_LCDResetScreen(LCDCursorTypeOff);
+    delay_ms(DISPLAY_DELAY);
+    PCF8574_LCDResetScreen(LCDCursorTypeBlink);
     delay_ms(DISPLAY_DELAY);
 }
 
@@ -139,7 +171,8 @@ void customChar(void) {
     // Print out custom characters
 
     for (uint8_t i = 0; i < 8; i++) {
-        PCF8574_LCDSendData(i);
+        PCF8574_LCDPrintCustomChar(i);
+        PCF8574_LCDMoveCursor(LCDMoveRight, 1);
     }
 
     delay_ms(DISPLAY_DELAY);
@@ -155,6 +188,7 @@ void backLightTest(void)
     PCF8574_LCDBackLightSet(true);
     PCF8574_LCDClearScreen();
 }
+
 
 // EOF
 
