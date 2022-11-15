@@ -8,9 +8,7 @@
  */
 
 #include "ER_OLEDM1_CH1115_graphics.h"
-#include "ER_OLEDM1_CH1115_font.h"
-#include "ER_OLEDM1_CH1115.h"
-#include <stdlib.h> // for the abs function, Calculates the absolute value.
+
 
 // Section: Variables 
 
@@ -377,13 +375,13 @@ void OGdrawChar(int16_t x, int16_t y, unsigned char c,
             line = 0x0;
         } else {
             switch (_FontNumber) {
-                case OLEDFont_Default: line = CH_Font_One[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
+                case OLEDFont_Default: line = pFontDefaultptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
                     break;
-                case OLEDFont_Thick: line = CH_Font_Two[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
+                case OLEDFont_Thick: line = pFontThickptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
                     break;
-                case OLEDFont_Seven_Seg: line = CH_Font_Three[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
+                case OLEDFont_Seven_Seg: line = pFontSevenptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
                     break;
-                case OLEDFont_Wide: line = CH_Font_Four[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
+                case OLEDFont_Wide: line = pFontWideptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
                     break;
                 default: // wrong font number
                     return;
@@ -464,61 +462,46 @@ int16_t OGheight(void) {
 void OGsetFontNum(uint8_t FontNumber) {
     _FontNumber = FontNumber;
 
-    enum OLED_Font_width {
-        FONT_W_FIVE = 5, FONT_W_SEVEN = 7, FONT_W_FOUR = 4, FONT_W_EIGHT = 8, FONT_W_16 = 16
-    }; // width of the font in bytes cols.
-
-    enum OLED_Font_offset {
-        FONT_O_EXTEND = ERMCH1115_ASCII_OFFSET, FONT_O_SP = ERMCH1115_ASCII_OFFSET_SP, FONT_N_SP = ERMCH1115_ASCII_OFFSET_NUM
-    }; // font offset in the ASCII table
-
-    enum OLED_Font_height {
-        FONT_H_8 = 8, FONT_H_32 = 32
-    }; // width of the font in bits
-
-    enum OLED_Font_width setfontwidth;
-    enum OLED_Font_offset setoffset;
-    enum OLED_Font_height setfontheight;
 
     switch (_FontNumber) {
         case OLEDFont_Default: // Norm default 5 by 8
-            _CurrentFontWidth = (setfontwidth = FONT_W_FIVE);
-            _CurrentFontoffset = (setoffset = FONT_O_EXTEND);
-            _CurrentFontheight = (setfontheight = FONT_H_8);
+            _CurrentFontWidth = FONT_W_FIVE;
+            _CurrentFontoffset = FONT_O_EXTEND;
+            _CurrentFontheight = FONT_H_8;
             break;
         case OLEDFont_Thick : // Thick 7 by 8 (NO LOWERCASE LETTERS)
-            _CurrentFontWidth = (setfontwidth = FONT_W_SEVEN);
-            _CurrentFontoffset = (setoffset = FONT_O_SP);
-            _CurrentFontheight = (setfontheight = FONT_H_8);
+            _CurrentFontWidth = FONT_W_SEVEN;
+            _CurrentFontoffset = FONT_O_SP;
+            _CurrentFontheight = FONT_H_8;
             break;
         case OLEDFont_Seven_Seg: // Seven segment 4 by 8
-            _CurrentFontWidth = (setfontwidth = FONT_W_FOUR);
-            _CurrentFontoffset = (setoffset = FONT_O_SP);
-            _CurrentFontheight = (setfontheight = FONT_H_8);
+            _CurrentFontWidth = FONT_W_FOUR;
+            _CurrentFontoffset = FONT_O_SP;
+            _CurrentFontheight =  FONT_H_8;
             break;
         case OLEDFont_Wide: // Wide  8 by 8 (NO LOWERCASE LETTERS)
-            _CurrentFontWidth = (setfontwidth = FONT_W_EIGHT);
-            _CurrentFontoffset = (setoffset = FONT_O_SP);
-            _CurrentFontheight = (setfontheight = FONT_H_8);
+            _CurrentFontWidth = FONT_W_EIGHT;
+            _CurrentFontoffset = FONT_O_SP;
+            _CurrentFontheight = FONT_H_8;
             break;
         case OLEDFont_Bignum: // big nums 16 by 32 (NUMBERS + : only)
-            _CurrentFontWidth = (setfontwidth = FONT_W_16);
-            _CurrentFontoffset = (setoffset = FONT_N_SP);
-            _CurrentFontheight = (setfontheight = FONT_H_32);
+            _CurrentFontWidth =  FONT_W_16;
+            _CurrentFontoffset = FONT_N_SP;
+            _CurrentFontheight = FONT_H_32;
             break;
         default: // if wrong font num passed in,  set to default
-            _CurrentFontWidth = (setfontwidth = FONT_W_FIVE);
-            _CurrentFontoffset = (setoffset = FONT_O_EXTEND);
-            _CurrentFontheight = (setfontheight = FONT_H_8);
+            _CurrentFontWidth = FONT_W_FIVE;
+            _CurrentFontoffset = FONT_O_EXTEND;
+            _CurrentFontheight = FONT_H_8;
             break;
     }
 
 }
 
-// Desc: writes a char (c) on the TFT
+// Desc: writes a char (c) on the OLED
 // Param 1 , 2 : coordinates (x, y).
 // Param 3: The ASCII character
-// Param 4: color 565 16-bit
+// Param 4: foreground color 
 // Param 5: background color
 // Notes for font 5 bignums only
 
@@ -530,7 +513,7 @@ void OGdrawCharBigNum(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_t bg
     uint8_t ctemp = 0, y0 = y;
 
     for (i = 0; i < 64; i++) {
-        ctemp = CH_Font_Five[c - _CurrentFontoffset][i];
+        ctemp = pFontBigNumptr[c - _CurrentFontoffset][i];
 
         for (j = 0; j < 8; j++) {
             if (ctemp & 0x80) {
@@ -550,7 +533,7 @@ void OGdrawCharBigNum(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_t bg
     }
 }
 
-// Desc: Writes text string (*ptext) on the TFT 
+// Desc: Writes text string (*ptext) on the Oled 
 // Param 1 , 2 : coordinates (x, y).
 // Param 3: pointer to string 
 // Param 4: color 

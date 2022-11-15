@@ -116,7 +116,7 @@ X = ER_OLEDM1_CH1115 in table below
 | X.c|  library  source file  |
 | X_graphics.h | graphics header file |
 | X_graphics.c |  graphics source file |
-| X_graphics_font.h |  font data file |
+| X_graphics_font.c |  font data file |
 | main.c | test sequence file |
 | my_utils.h | misc utilty header file |
 | my_utils.c | misc utility source file  |

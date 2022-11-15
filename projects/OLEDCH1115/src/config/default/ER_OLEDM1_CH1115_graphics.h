@@ -1,7 +1,8 @@
 /*
 * Project Name: ER_OLEDM1_CH1115
 * File: ER_OLEDM1_CH1115_graphics.h
-* Description: ER_OLEDM1 OLED driven by CH1115 controller header file for the custom graphics functions based on Adafruit graphics library
+* Description: ER_OLEDM1 OLED driven by CH1115 controller header file 
+* for the custom graphics functions based on Adafruit graphics library
 * Author: Gavin Lyons.
 * Project URL:  https://github.com/gavinlyonsrepo/pic_32_projects
 */
@@ -11,12 +12,12 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stdlib.h> // for the abs function, Calculates the absolute value.
+#include "ER_OLEDM1_CH1115_font.h"
+#include "ER_OLEDM1_CH1115.h"
 
 #define swap(a, b) { int16_t t = a; a = b; b = t; }
 
-#define ERMCH1115_ASCII_OFFSET 0x00
-#define ERMCH1115_ASCII_OFFSET_SP 0x20 // Starts at Space
-#define ERMCH1115_ASCII_OFFSET_NUM 0x30 // Starts at number 0
 
 typedef enum 
 {
@@ -27,6 +28,20 @@ typedef enum
     OLEDFont_Bignum = 5,
 }OLEDFONT_e;
 
+typedef enum {
+    FONT_W_FIVE = 5, FONT_W_SEVEN = 7, FONT_W_FOUR = 4, FONT_W_EIGHT = 8, FONT_W_16 = 16
+}OLEDFONT_width_e ; // width of the font in bytes cols.
+
+typedef enum  {
+    FONT_O_EXTEND = 0x00, 
+    FONT_O_SP = 0x20, // Starts at Space
+    FONT_N_SP = 0x30 // Starts at number 0
+}OLEDFONT_offset_e; // font offset in the ASCII table
+
+typedef enum  
+{
+    FONT_H_8 = 8, FONT_H_32 = 32
+}OLEDFONT_height_e; // width of the font in bits
 
 void OGInit(); 
 
