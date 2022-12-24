@@ -28,6 +28,7 @@
 void mySetup(void);
 void UpdateDisplayDelay(void);
 void DisplayText(void);
+void DisplayPrintf(void);
 void DisplayGraphics(void);
 void DisplayBitmap(void);
 void DisplayMiscTests(void);
@@ -41,6 +42,7 @@ int main(void) {
     while (true) {
         SYS_Tasks();
         DisplayText(); // Font test
+        DisplayPrintf(); // printf method for displaying text
         DisplayGraphics(); // graphics test
         DisplayBitmap(); // bitmap test
         DisplayMiscTests();   // Function test
@@ -56,31 +58,24 @@ int main(void) {
 
 // Display Bitmap , A series of tests to display the bitmap mode
 void DisplayBitmap(void) {
-    // 'small image', 24x24px bitmap bi-colour horizontally addressed
-    const uint8_t smallImageHa[72] = {
-     0xff, 0xff, 0xff, 0xfe, 0x0f, 0xff, 0xf0, 0x02, 0xff, 0xe1, 0xf8, 0x7f, 0xc7, 0xfe, 0x3f, 0xc3, 
-	0xff, 0x1f, 0x80, 0x7f, 0x1f, 0x80, 0x3f, 0x9f, 0x80, 0x3d, 0x8f, 0x00, 0x30, 0x8f, 0x00, 0x18, 
-	0x8f, 0x80, 0x1d, 0x8f, 0x80, 0x0f, 0x1f, 0x80, 0x00, 0x1f, 0xc0, 0x00, 0x3f, 0xc0, 0x00, 0x3f, 
-	0xe0, 0x00, 0x7f, 0xf0, 0x00, 0xff, 0xfc, 0x03, 0xff, 0xff, 0x9f, 0xff, 0xff, 0xff, 0xff, 0xff, 
-	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+    // Mobile icon  16x8px Vertical addressed 
+    const uint8_t  SignalIconVa[16] = {
+        0x03, 0x05, 0x09, 0xff, 0x09, 0x05, 0xf3, 0x00, 0xf8, 0x00, 0xfc, 0x00, 0xfe, 0x00, 0xff, 0x00
     };
 
-    // 'small image', 24x24px bitmap bi-colour vertically addressed
-    const uint8_t smallImageVa[72] = {
-        0xff, 0x3f, 0x0f, 0x07, 0x03, 0x13, 0x33, 0x39, 0x39, 0x79, 0xf9, 0xf9, 0xfb, 0xf3, 0xf7, 0xe3, 
-	0x87, 0x0f, 0x1f, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf9, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 
-	0x00, 0x00, 0x03, 0x0f, 0x1d, 0x19, 0x10, 0x19, 0x0f, 0x00, 0xc0, 0xf0, 0xff, 0xff, 0xff, 0xff, 
-	0xff, 0xff, 0xff, 0xfe, 0xfc, 0xfc, 0xf8, 0xf8, 0xf8, 0xf0, 0xf0, 0xf8, 0xf8, 0xf8, 0xfc, 0xfc, 
-	0xfe, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
+    // Mobile icon  16x8px horizontal addressed 
+    const uint8_t  SignalIconHa[16] = {
+        0xfe, 0x02, 0x92, 0x0a, 0x54, 0x2a, 0x38, 0xaa, 0x12, 0xaa, 0x12, 0xaa, 0x12, 0xaa, 0x12, 0xaa
     };
+    
     // Writes bitmap to buffer
-    OGdrawBitmapBuffer(05, 22, 24, 24, BACKGROUND, FOREGROUND, (uint8_t*) smallImageHa);
-    OGdrawBitmapBuffer(55, 22, 24, 24, FOREGROUND, BACKGROUND, (uint8_t*) smallImageHa);
+    OGdrawBitmapBufferHa(05, 22, 16, 8, BACKGROUND, FOREGROUND, (uint8_t*) SignalIconHa);
+    OGdrawBitmapBufferVa(55, 22, 16, 8, FOREGROUND, BACKGROUND, (uint8_t*) SignalIconVa);
     UpdateDisplayDelay();
     
     // Writes directly to screen 
     OLEDFillScreen(0x00, 0);
-    OLEDBitmap(50, 10, 24, 24, (uint8_t*) smallImageVa);
+    OLEDBitmap(50, 10, 16, 8, (uint8_t*) SignalIconVa);
     delay_ms(5000);
     OLEDFillScreen(0x00, 0);
 
@@ -131,7 +126,8 @@ void DisplayText(void) {
 
     OGsetTextWrap(true);
     OLEDclearBuffer(); // Clear the buffer
-    OGsetFontNum(OLEDFont_Default);
+    OGsetFontNum(OLEDFontType_Default);
+
     // Test 1
     OGdrawText(0, 0, "3.14", FOREGROUND, BACKGROUND, 3);
 
@@ -146,14 +142,13 @@ void DisplayText(void) {
 
     // Test 4
     OGdrawChar(95, 15, 'H', FOREGROUND, BACKGROUND, 6);
-
     UpdateDisplayDelay();
-
+   
     // Test 5
     OGdrawText(0, 0, "ASCII FONT 0-127", FOREGROUND, BACKGROUND, 1);
-    OGsetCursor(0, 15);
+    OGsetCursor(0, 9);
     uint8_t x = 0;
-    uint8_t y = 15;
+    uint8_t y = 9;
 
     // Print first 127 chars of font
     for (char i = 0; i < 126; i++) {
@@ -171,7 +166,7 @@ void DisplayText(void) {
 
     OGdrawText(0, 0, "ASCII font 128-255", FOREGROUND, BACKGROUND, 1);
     x = 0;
-    y = 15;
+    y = 9;
     OGsetCursor(x, y);
 
     for (uint8_t i = 128; i < 255; i++) {
@@ -187,44 +182,72 @@ void DisplayText(void) {
     UpdateDisplayDelay();
 
     // Test 7
-    OGsetFontNum(OLEDFont_Default);
+    OGsetFontNum(OLEDFontType_Default);
     OGdrawText(0, 0, "Thick Font:", FOREGROUND, BACKGROUND, 1);
 
-    OGsetFontNum(OLEDFont_Thick);
+    OGsetFontNum(OLEDFontType_Thick);
     OGdrawText(0, 15, "123", FOREGROUND, BACKGROUND, 1);
     OGdrawChar(70, 25, 'T', FOREGROUND, BACKGROUND, 4);
     UpdateDisplayDelay();
 
     // Test 8
-    OGsetFontNum(OLEDFont_Default);
+    OGsetFontNum(OLEDFontType_Default);
     OGdrawText(0, 0, "Seven Segment:", FOREGROUND, BACKGROUND, 1);
-    OGsetFontNum(OLEDFont_Seven_Seg);
+    OGsetFontNum(OLEDFontType_SevenSeg);
     OGdrawText(0, 15, "123", FOREGROUND, BACKGROUND, 1);
     OGdrawChar(70, 25, 's', FOREGROUND, BACKGROUND, 4);
     UpdateDisplayDelay();
 
     // Test 9
-    OGsetFontNum(OLEDFont_Default);
+    OGsetFontNum(OLEDFontType_Default);
     OGdrawText(0, 0, "Wide Font:", FOREGROUND, BACKGROUND, 1);
-    OGsetFontNum(OLEDFont_Wide);
+    OGsetFontNum(OLEDFontType_Wide);
     OGdrawText(0, 15, "123", FOREGROUND, BACKGROUND, 1);
     OGdrawChar(70, 25, 'W', FOREGROUND, BACKGROUND, 4);
     UpdateDisplayDelay();
-
-    //Test 10
-    OGsetFontNum(OLEDFont_Default);
+    
+     // Test 9b
+    OGsetFontNum(OLEDFontType_Default);
+    OGdrawText(0, 0, "tiny Font:", FOREGROUND, BACKGROUND, 1);
+    OGsetFontNum(OLEDFontType_Tiny);
+    OGdrawText(0, 15, "123456 tiny", FOREGROUND, BACKGROUND, 1);
+    OGdrawChar(70, 25, 't', FOREGROUND, BACKGROUND, 4);
+    UpdateDisplayDelay();
+    
+    // Test 9c
+    OGsetFontNum(OLEDFontType_Default);
+    OGdrawText(0, 0, "Homespun Font:", FOREGROUND, BACKGROUND, 1);
+    OGsetFontNum(OLEDFontType_Homespun);
+    OGdrawText(0, 15, "123456 home", FOREGROUND, BACKGROUND, 1);
+    OGdrawChar(70, 25, 'H', FOREGROUND, BACKGROUND, 4);
+    UpdateDisplayDelay();
+    
+    //Test 10 bignum
+    OGsetFontNum(OLEDFontType_Default);
     OGdrawText(0, 0, "bigNums font:", FOREGROUND, BACKGROUND, 1);
 
-    OGsetFontNum(OLEDFont_Bignum);
+    OGsetFontNum(OLEDFontType_Bignum);
     char myString[9] = {'1', '3', ':', '2', '6', ':', '1', '8'};
-    OGdrawTextBigNum(0, 32, myString, BACKGROUND, FOREGROUND); // Test 10a drawTextBigNum
+    OGdrawTextNum(0, 32, myString, BACKGROUND, FOREGROUND); // Test 10a drawTextNum
     UpdateDisplayDelay();
 
     // Test 10b
-    OGdrawCharBigNum(0, 0, '8', FOREGROUND, BACKGROUND); // Test 10b drawCharBigNum
-    OGdrawCharBigNum(40, 32, '4', BACKGROUND, FOREGROUND);
+    OGdrawCharNum(0, 0, '8', FOREGROUND, BACKGROUND); // Test 10b drawCharNum
+    OGdrawCharNum(40, 32, '4', BACKGROUND, FOREGROUND);
+    UpdateDisplayDelay();
+    
+    // Test 11 mednum
+    OGsetFontNum(OLEDFontType_Default);
+    OGdrawText(0, 0, "MedNums font:", FOREGROUND, BACKGROUND, 1);
+
+    OGsetFontNum(OLEDFontType_Mednum);
+    OGdrawTextNum(0, 32, myString, BACKGROUND, FOREGROUND); // Test 11a drawTextNum
     UpdateDisplayDelay();
 
+    // Test 11b
+    OGdrawCharNum(0, 0, '7', FOREGROUND, BACKGROUND); // Test 11b drawCharNum
+    OGdrawCharNum(40, 32, '3', BACKGROUND, FOREGROUND);
+    UpdateDisplayDelay();
 } // end DisplayText
 
 // initialize the OLED
@@ -233,7 +256,7 @@ void mySetup(void) {
     OGInit();
     OLEDFillScreen(0x00, 0);
     OGsetTextColor(FOREGROUND, BACKGROUND);
-    OGsetFontNum(OLEDFont_Default);
+    OGsetFontNum(OLEDFontType_Default);
     OLEDclearBuffer(); 
 }
 
@@ -307,7 +330,7 @@ void DisplayMiscTests(void)
   // See .c file for more info on these parameters.
   uint8_t timeInterval = 0x00; // 6 frames 0x00 - 0x07
   uint8_t scrollDirection = 0x26; //right 0x26 or 0x27
-  uint8_t scrollMode = 0x28; // contiunous 0x28-0x2A,
+  uint8_t scrollMode = 0x28; // non-stop 0x28-0x2A,
   OLEDscrollSetup(timeInterval, scrollDirection , scrollMode);
   OLEDscroll(1); //start scroll
   delay_ms(15000);
@@ -317,7 +340,7 @@ void DisplayMiscTests(void)
 
   timeInterval = 0x02; // 64 frames , 0x00 - 0x07
   scrollDirection = 0x27; // left , 0x26 or 0x27
-  scrollMode = 0x29; // contiunous 0x28 one shot 0x29 , one col 0x2A,
+  scrollMode = 0x29; // non-stop 0x28 one shot 0x29 , one col 0x2A,
   OLEDscrollSetup(timeInterval, scrollDirection , scrollMode);
   OLEDscroll(1); //start
   delay_ms(15000);
@@ -340,6 +363,46 @@ void DisplayMiscTests(void)
   delay_ms(5000);
 }
 
-/*******************************************************************************
- End of File
- */
+// A series of tests to test the OGprintf to print numerical data
+void DisplayPrintf(void)
+{
+    OGsetTextWrap(true);
+    OLEDclearBuffer(); // Clear the buffer
+    OGsetFontNum(OLEDFontType_Default);
+    
+    uint16_t testOne = 62005; 
+    int16_t testTwo = -4501; 
+    double testThree = 3.143567;
+    double testFour = -14.561;
+    
+    // Test default font
+    OGsetCursor(10,5);
+    OGPrintf("%u", testOne);
+    OGsetCursor(10,25);
+    OGPrintf("%d", testTwo);
+    OGsetCursor(10,40);
+    OGPrintf("%.4f", testThree);
+    OGsetCursor(10,55);
+    OGPrintf("%.2f", testFour);
+    UpdateDisplayDelay();
+    
+    // test big number font 
+    OGsetFontNum(OLEDFontType_Mednum);
+    OGsetCursor(10,0);
+    OGPrintf("%u", testOne);
+    OGsetCursor(10,16);
+    OGPrintf("%d", testTwo);
+    OGsetCursor(10,32);
+    OGPrintf("%.4f", testThree);
+    UpdateDisplayDelay();    
+    
+    // test med number font
+    OGsetFontNum(OLEDFontType_Bignum);
+    OGsetCursor(10,0);
+    OGPrintf("%d", testTwo);
+    OGsetCursor(10,32);
+    OGPrintf("%.4f", testThree);
+    UpdateDisplayDelay(); 
+
+}
+// === EOF ===

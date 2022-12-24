@@ -3,7 +3,6 @@
  * Project Name: ER_OLEDM1_CH1115
  * File:ER_OLEDM1_CH1115_graphics.c
  * Description: ER_OLEDM1 OLED driven by CH1115 controller source file for the graphics functions.
- * Author: Gavin Lyons.
  * Project URL:  https://github.com/gavinlyonsrepo/pic_32_projects
  */
 
@@ -25,9 +24,8 @@ uint8_t textsize;
 uint8_t rotation;
 bool wrap; // If set, 'wrap' text at right edge of display
 
-// Font   related 
-OLEDFONT_e FontNum;
-uint8_t _FontNumber = OLEDFont_Default;
+// default font settings 
+uint8_t _FontNumber = 1;
 uint8_t _CurrentFontWidth = 5;
 uint8_t _CurrentFontoffset = 0;
 uint8_t _CurrentFontheight = 8;
@@ -341,9 +339,9 @@ void OGfillTriangle(int16_t x0, int16_t y0,
 // Param 1,2  X,Y screen co-ord
 // Param 3,4 0-127 possible values width and height of bitmap in pixels 
 // Param 4,5 bitmap colors ,bitmap is bi-color
-// Param 6: an array of unsigned chars containing bitmap data horizontally addressed.
-
-void OGdrawBitmapBuffer(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color, uint8_t bgcolor, const unsigned char bitmap[]) {
+// Param 6: an array of unsigned chars containing bitmap
+// NOTES :: data horizontally  addressed.
+void OGdrawBitmapBufferHa(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color, uint8_t bgcolor, const unsigned char bitmap[]) {
     int16_t byteWidth = (w + 7) / 8;
     uint8_t byte = 0;
     for (int16_t j = 0; j < h; j++, y++) {
@@ -357,8 +355,41 @@ void OGdrawBitmapBuffer(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t colo
     }
 }
 
+// Desc:  Draw a 1-bit color bitmap at the specified x, y position from the
+// provided bitmap buffer using color as the
+// foreground color and bg as the background color.
+// Param 1,2  X,Y screen co-ord
+// Param 3,4 0-127 possible values width and height of bitmap in pixels 
+// Param 4,5 bitmap colors ,bitmap is bi-color
+// Param 6: an array of unsigned chars containing bitmap 
+// NOTES :: data vertically addressed.
+void OGdrawBitmapBufferVa(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t color, uint8_t bgcolor, const unsigned char bitmap[]) {
+	uint8_t vline;
+	int16_t i, j, r = 0, yin = y;
+	
+	for (i=0; i<(w+1); i++ ) {
+		if (r == (h+7)/8 * w) break;
+		vline = bitmap [ r] ;
+		r++;
+		if (i == w) {
+			y = y+8;
+			i = 0;
+		}
+		
+		for (j=0; j<8; j++ ) {
+			if (y+j-yin == h) break;
+			if (vline & 0x1) {
+				drawPixel(x+i, y+j, color);
+			}
+			else {
+				drawPixel(x+i, y+j, bgcolor);
+			}	
+			vline >>= 1;
+		}
+	}
+}
 
-// Draw a character for Font 1-4,
+// Draw a character for Font 1-6,
 
 void OGdrawChar(int16_t x, int16_t y, unsigned char c,
         uint8_t color, uint8_t bg, uint8_t size) {
@@ -375,17 +406,15 @@ void OGdrawChar(int16_t x, int16_t y, unsigned char c,
             line = 0x0;
         } else {
             switch (_FontNumber) {
-                case OLEDFont_Default: line = pFontDefaultptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
-                    break;
-                case OLEDFont_Thick: line = pFontThickptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
-                    break;
-                case OLEDFont_Seven_Seg: line = pFontSevenptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
-                    break;
-                case OLEDFont_Wide: line = pFontWideptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i];
-                    break;
+                case OLEDFontType_Default : line = pFontDefaultptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i]; break;
+                case OLEDFontType_Thick : line = pFontThickptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i]; break;
+                case OLEDFontType_SevenSeg: line = pFontSevenSegptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i]; break;
+                case OLEDFontType_Wide : line = pFontWideptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i]; break;
+                case OLEDFontType_Tiny : line = pFontTinyptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i]; break;
+                case OLEDFontType_Homespun : line = pFontHomeSpunptr[((c - _CurrentFontoffset) * _CurrentFontWidth) + i]; break;
                 default: // wrong font number
                     return;
-                    break;
+                break;
             }
         }
         for (int8_t j = 0; j < _CurrentFontheight; j++) {
@@ -456,46 +485,61 @@ int16_t OGheight(void) {
 }
 
 // Desc :  Set the font number
-// Param1: fontnumber 1-5
-// 1=default 2=thick 3=seven segment 4=wide 5=bignums
+// Param1: fontnumber 1-8  OLEDFontType_e
+// 1=default 2=thick 3=seven segment 4=wide 5=tiny 6=homespun
+// 7= bignum 8=mednum
 
-void OGsetFontNum(uint8_t FontNumber) {
+void OGsetFontNum(OLEDFontType_e FontNumber) {
     _FontNumber = FontNumber;
 
-
     switch (_FontNumber) {
-        case OLEDFont_Default: // Norm default 5 by 8
-            _CurrentFontWidth = FONT_W_FIVE;
-            _CurrentFontoffset = FONT_O_EXTEND;
-            _CurrentFontheight = FONT_H_8;
-            break;
-        case OLEDFont_Thick : // Thick 7 by 8 (NO LOWERCASE LETTERS)
-            _CurrentFontWidth = FONT_W_SEVEN;
-            _CurrentFontoffset = FONT_O_SP;
-            _CurrentFontheight = FONT_H_8;
-            break;
-        case OLEDFont_Seven_Seg: // Seven segment 4 by 8
-            _CurrentFontWidth = FONT_W_FOUR;
-            _CurrentFontoffset = FONT_O_SP;
-            _CurrentFontheight =  FONT_H_8;
-            break;
-        case OLEDFont_Wide: // Wide  8 by 8 (NO LOWERCASE LETTERS)
-            _CurrentFontWidth = FONT_W_EIGHT;
-            _CurrentFontoffset = FONT_O_SP;
-            _CurrentFontheight = FONT_H_8;
-            break;
-        case OLEDFont_Bignum: // big nums 16 by 32 (NUMBERS + : only)
-            _CurrentFontWidth =  FONT_W_16;
-            _CurrentFontoffset = FONT_N_SP;
-            _CurrentFontheight = FONT_H_32;
-            break;
-        default: // if wrong font num passed in,  set to default
-            _CurrentFontWidth = FONT_W_FIVE;
-            _CurrentFontoffset = FONT_O_EXTEND;
-            _CurrentFontheight = FONT_H_8;
-            break;
+	case OLEDFontType_Default:  // Norm default 5 by 8
+		_CurrentFontWidth = OLEDFontWidth_5;
+		_CurrentFontoffset =  OLEDFontOffset_Extend;
+		_CurrentFontheight = OLEDFontHeight_8;
+	break; 
+	case OLEDFontType_Thick: // Thick 7 by 8 (NO LOWERCASE LETTERS)
+		_CurrentFontWidth = OLEDFontWidth_7;
+		_CurrentFontoffset = OLEDFontOffset_Space;
+		_CurrentFontheight = OLEDFontHeight_8;
+	break; 
+	case OLEDFontType_SevenSeg:  // Seven segment 4 by 8
+		_CurrentFontWidth = OLEDFontWidth_4;
+		_CurrentFontoffset = OLEDFontOffset_Space;
+		_CurrentFontheight = OLEDFontHeight_8;
+	break;
+	case OLEDFontType_Wide : // Wide  8 by 8 (NO LOWERCASE LETTERS)
+		_CurrentFontWidth = OLEDFontWidth_8;
+		_CurrentFontoffset = OLEDFontOffset_Space;
+		_CurrentFontheight = OLEDFontHeight_8;
+	break; 
+	case OLEDFontType_Tiny:  // tiny 3 by 8
+		_CurrentFontWidth = OLEDFontWidth_3;
+		_CurrentFontoffset =  OLEDFontOffset_Space;
+		_CurrentFontheight = OLEDFontHeight_8;
+	break;
+	case OLEDFontType_Homespun: // homespun 7 by 8 
+		_CurrentFontWidth = OLEDFontWidth_7;
+		_CurrentFontoffset = OLEDFontOffset_Space;
+		_CurrentFontheight = OLEDFontHeight_8;
+	break;
+	case OLEDFontType_Bignum : // big nums 16 by 32 (NUMBERS + : only)
+		_CurrentFontWidth = OLEDFontWidth_16;
+		_CurrentFontoffset = OLEDFontOffset_Number;
+		_CurrentFontheight = OLEDFontHeight_32;
+	break; 
+	case OLEDFontType_Mednum: // med nums 16 by 16 (NUMBERS + : only)
+		_CurrentFontWidth = OLEDFontWidth_16;
+		_CurrentFontoffset =  OLEDFontOffset_Number;
+		_CurrentFontheight = OLEDFontHeight_16;
+	break;
+	default: // if wrong font num passed in,  set to default
+		_CurrentFontWidth = OLEDFontWidth_5;
+		_CurrentFontoffset =  OLEDFontOffset_Extend;
+		_CurrentFontheight = OLEDFontHeight_8;
+		_FontNumber = OLEDFontType_Default;
+	break;
     }
-
 }
 
 // Desc: writes a char (c) on the OLED
@@ -503,17 +547,23 @@ void OGsetFontNum(uint8_t FontNumber) {
 // Param 3: The ASCII character
 // Param 4: foreground color 
 // Param 5: background color
-// Notes for font 5 bignums only
+// Notes for font 7-8 only
 
-void OGdrawCharBigNum(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_t bg) {
-    if (_FontNumber != OLEDFont_Bignum) {
+void OGdrawCharNum(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_t bg) {
+    if (_FontNumber < OLEDFontType_Bignum) {
         return;
     }
     uint8_t i, j;
     uint8_t ctemp = 0, y0 = y;
 
-    for (i = 0; i < 64; i++) {
-        ctemp = pFontBigNumptr[c - _CurrentFontoffset][i];
+    for (i = 0; i < (_CurrentFontheight*2); i++) {
+        if (_FontNumber == OLEDFontType_Bignum){
+			ctemp = pFontBigNumptr[c - _CurrentFontoffset][i];
+		}
+		else if (_FontNumber == OLEDFontType_Mednum){
+			ctemp = pFontMedNumptr[c - _CurrentFontoffset][i];
+
+		}
 
         for (j = 0; j < 8; j++) {
             if (ctemp & 0x80) {
@@ -538,10 +588,10 @@ void OGdrawCharBigNum(uint8_t x, uint8_t y, uint8_t c, uint8_t color, uint8_t bg
 // Param 3: pointer to string 
 // Param 4: color 
 // Param 5: background color
-// Notes for font 5 only "bignums" 
+// Notes for font 7-8 only  
 
-void OGdrawTextBigNum(uint8_t x, uint8_t y, char *pText, uint8_t color, uint8_t bg) {	
-    if (_FontNumber != OLEDFont_Bignum) {
+void OGdrawTextNum(uint8_t x, uint8_t y, char *pText, uint8_t color, uint8_t bg) {	
+    if (_FontNumber < OLEDFontType_Bignum) {
         return;
     }
 
@@ -554,31 +604,123 @@ void OGdrawTextBigNum(uint8_t x, uint8_t y, char *pText, uint8_t color, uint8_t 
             }
         }
 
-        OGdrawCharBigNum(x, y, *pText, color, bg);
+        OGdrawCharNum(x, y, *pText, color, bg);
         x += _CurrentFontWidth;
         pText++;
     }
 }
 
-// Draw a char array for Font 1-4,
-void OGdrawText(uint8_t x, uint8_t y, char *_text, uint16_t color, uint16_t bg, uint8_t size) {
+// Desc: Draw a char array to screen
+// Param 1 , 2 : coordinates (x, y).
+// Param 3: pointer to string 
+// Param 4: color 
+// Param 5: background color
+// Param 6: size 1 to X
+// Notes for font 1-6 only  
+void OGdrawText(uint8_t x, uint8_t y, char *pText, uint16_t color, uint16_t bg, uint8_t size) 
+{
+     if (_FontNumber >= OLEDFontType_Bignum){return;}
+    
     uint8_t cursor_x, cursor_y;
-    uint16_t textsize, i;
     cursor_x = x, cursor_y = y;
-    textsize = strlen(_text);
-    for (i = 0; i < textsize; i++) {
-        if (wrap && ((cursor_x + size * _CurrentFontWidth) > _width)) {
+      while (*pText != '\0') 
+      {
+        if (wrap && ((cursor_x + size * _CurrentFontWidth) > _width)) 
+        {
             cursor_x = 0;
             cursor_y = cursor_y + size * 7 + 3;
             if (cursor_y > _height) cursor_y = _height;
-            if (_text[i] == 0) goto _skip;
         }
-        OGdrawChar(cursor_x, cursor_y, _text[i], color, bg, size);
+        OGdrawChar(cursor_x, cursor_y, *pText, color, bg, size);
         cursor_x = cursor_x + size * (_CurrentFontWidth + 1);
         if (cursor_x > _width) cursor_x = _width;
-_skip:
-        ;
-    }
+        pText++;
+      }
 }
- 
+
+// Desc: vsprintf wrapper to print numerical data
+// Parameters: https://www.tutorialspoint.com/c_standard_library/c_function_vsprintf.htm 
+// The C library function int vsprintf(char *str, const char *format, va_list arg) 
+// sends formatted output to a string using an argument list passed to it.
+// Returns: If successful, the total number of characters written is returned, 
+// otherwise a negative number is returned.
+// Note: requires stdio.h and stdarg.h libraries
+
+int OGPrintf(const char *fmt, ...) {
+    int length;
+    char buffer[20];
+    char *pText = buffer;
+    
+    va_list ap;
+    va_start(ap, fmt);
+    length = vsprintf(buffer, fmt, ap);
+    va_end(ap);
+    
+    if (length > 0) 
+    {
+        while (*pText != '\0')
+        {
+            OGwrite(*pText);
+            pText++;
+        }
+    }
+    return length;
+}
+
+// Desc :: Prints a single character to screen called by OGPrintf.
+size_t OGwrite(uint8_t character) 
+{
+	if (_FontNumber < OLEDFontType_Bignum)
+	{
+		if (character == '\n') {
+		cursor_y += textsize*_CurrentFontheight;
+		cursor_x  = 0;
+		} else if (character == '\r') {
+		// skip 
+		} else {
+		OGdrawChar(cursor_x, cursor_y, character, textcolor, textbgcolor, textsize);
+		cursor_x += textsize*(_CurrentFontWidth+1);
+			if (wrap && (cursor_x > (_width - textsize*(_CurrentFontWidth+1)))) {
+			  cursor_y += textsize*_CurrentFontheight;
+			  cursor_x = 0;
+			}
+		}
+	}else if (_FontNumber == OLEDFontType_Bignum || _FontNumber == OLEDFontType_Mednum)
+	{
+		uint8_t decPointRadius = 3;
+        uint8_t SkipSpace = 0;
+		if (_FontNumber == OLEDFontType_Mednum) decPointRadius = 2;
+		
+        switch (character)
+        {
+            case '\n': 
+                cursor_y += _CurrentFontheight;
+                cursor_x  = 0;
+            break;
+            case '\r': break;
+            case '.':  // draw a circle for decimal & point skip a space.
+                OGfillCircle(cursor_x+(_CurrentFontWidth/2), cursor_y + (_CurrentFontheight-6), decPointRadius, textcolor);
+                SkipSpace = 1;
+             break;
+            case '-':  // draw a rect for negative number line and skip a space
+                OGfillRect(cursor_x+2, cursor_y + (_CurrentFontheight/2)-2 ,_CurrentFontWidth-4 , decPointRadius+1,  textcolor);              
+                SkipSpace = 1;
+            break;
+            default:
+                OGdrawCharNum(cursor_x, cursor_y, character, textcolor, textbgcolor);
+                SkipSpace = 1;
+            break;
+        }
+        if (SkipSpace == 1)
+        {
+            cursor_x += (_CurrentFontWidth+1);
+			if (wrap && (cursor_x  > (_width - (_CurrentFontWidth+1)))) 
+			{
+				cursor_y += _CurrentFontheight;
+				cursor_x = 0;
+			}
+        }
+	}
+  return 1;
+}
 //***************** EOF *****************

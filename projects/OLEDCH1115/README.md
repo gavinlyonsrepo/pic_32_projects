@@ -16,12 +16,13 @@ Overview
 * Description : 
 
 1. Tested on PIC32CM1216MC00032       
-2. Invert colour, vertical rotate, sleep, fade effect, horizontal scroll and contrast control  functions supported.
-3. 5 ASCII fonts included.
+2. Invert colour, vertical rotate, sleep, fade effect, horizontal scroll and contrast control functions supported.
+3. 8 ASCII fonts included.
 4. Graphics support included.
 5. Single buffer mode.
 6. Bitmaps supported.
 7. Hardware SPI.
+8. Printf method included for printing numerical data
 
 * Port of my Arduino [library](https://github.com/gavinlyonsrepo/ER_OLEDM1_CH1115)
 * Author: Gavin Lyons
@@ -66,20 +67,25 @@ Setup for 1mS tick.
 
 *fonts*
 
-There are five fonts.
-The fonts 1-4 are a byte high(at text size 1) scale-able fonts, columns of padding added by SW.
-Font 5 is a special large font but it is numbers only and cannot be scaled(just one size).  
-Font 5 will print just numbers + semi-colons.
+There are eight fonts.
+The fonts 1-6 are a byte high(at text size 1) scale-able fonts, columns of padding added by SW.
+Font 7-8 are large numerical font but it is numbers only and cannot be scaled(just one size).  
+Font 7-8 will print just numbers + semi-colons, using the printf method it is possible to print 
+'.' and '-' characters with font 7-8.
 
 Font data table: 
 
-| Font num | Font name | Font size xbyy |  ASCII range | Size in bytes |
+| Font num | Font enum name | Font size xbyy |  ASCII range | Size in bytes |
 | ------ | ------ | ------ | ------ |  ------ | 
-| 1 | Default | 5x8 | Full Extended ASCII 0 - 0xFF | 1275 |
-| 2 | Thick   | 7x8 | no lowercase letters , ASCII  0x20 - 0x5A | 406 | 
-| 3 | Seven segment | 4x8 | ASCII  0x20 - 0x7A | 360 |
-| 4 | Wide | 8x8 | no lowercase letters, ASCII 0x20 - 0x5A | 464 |
-| 5 | Big Nums | 16x32 | ASCII 0x30-0x3A ,Numbers + : only | 704 |
+| 1 | OLEDFontType_Default | 5x8 | ASCII 0 - 0xFF, Full Extended  | 1275 |
+| 2 | OLEDFontType_Thick   | 7x8 |  ASCII  0x20 - 0x5A, no lowercase letters | 406 | 
+| 3 | OLEDFontType_SevenSeg  | 4x8 | ASCII  0x20 - 0x7A | 360 |
+| 4 | OLEDFontType_Wide | 8x8 |  ASCII 0x20 - 0x5A, no lowercase letters| 464 |
+| 5 | OLEDFontType_Tiny | 3x8 | ASCII  0x20 - 0x7E | 285 |
+| 6 | OLEDFontType_Homespun  | 7x8 | ASCII  0x20 - 0x7E |  658 |
+| 7 | OLEDFontType_Bignum | 16x32 | ASCII 0x30-0x3A ,Numbers + : . only | 704 |
+| 8 | OLEDFontType_Mednum | 16x16 | ASCII 0x30-0x3A , Numbers + : . only | 352 |
+
 
 *bitmaps*
 
@@ -87,11 +93,14 @@ Bitmaps can be turned to data [here at link]( https://javl.github.io/image2cpp/)
 
 1. OLEDBitmap function
  
-Bitmaps are written directly to screen, not buffer, Updating the buffer will overwrite them(unless bitmap set to buffer)  Use vertical addressing draw mode to make  bitmap.
+Bitmaps are written directly to screen, not buffer, Updating the buffer will overwrite them(unless bitmap set to buffer)  Use vertical addressed data  to make  bitmap.
 
-2. OGdrawBitmapBuffer function 
+2. OGdrawBitmapBufferXX function 
 
-Bitmaps are written to buffer. Use horizontal addressed draw mode to make bitmap.
+Bitmaps are written to buffer with these functions 
+
+* OGdrawBitmapBufferHa , Use horizontal addressed data to make bitmap.
+* OGdrawBitmapBufferVa ,  Use vertical addressed data  to make  bitmap.
 
 *User adjustments*
 
