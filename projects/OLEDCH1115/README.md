@@ -34,7 +34,6 @@ Output
 Output Screenshots.
 
 ![ output ](https://github.com/gavinlyonsrepo/ER_OLEDM1_CH1115/blob/main/extras/image/output.jpg)
-![ output ](https://github.com/gavinlyonsrepo/ER_OLEDM1_CH1115_RPI/blob/main/extras/image/fontpic.jpg)
 
 Hardware
 ----------------------------
@@ -89,7 +88,7 @@ Font data table:
 
 *bitmaps*
 
-Bitmaps can be turned to data [here at link]( https://javl.github.io/image2cpp/) , 
+Bitmaps can be turned to data [here at link](https://github.com/gavinlyonsrepo/Guardian_LTSM) , 
 
 1. OLEDBitmap function
  
